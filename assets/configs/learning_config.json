@@ -1,0 +1,123 @@
+{
+  "version": "1.0.0",
+  "enabled": true,
+  "description": "ARTA 学习机制配置 - 支持从历史数据中学习模式",
+  
+  "patternExtraction": {
+    "enabled": true,
+    "sources": [
+      "business_flows",
+      "test_cases",
+      "api_sequences"
+    ],
+    "minOccurrences": 2,
+    "confidenceThreshold": 0.7
+  },
+  
+  "patternTypes": {
+    "apiSequence": {
+      "description": "API 调用序列模式",
+      "enabled": true,
+      "examples": [
+        {
+          "pattern": "login -> get_user -> update_profile",
+          "frequency": 5,
+          "module": "用户管理"
+        }
+      ]
+    },
+    "dataStrategy": {
+      "description": "测试数据策略模式",
+      "enabled": true,
+      "examples": [
+        {
+          "pattern": "auth_token_from_login",
+          "appliesTo": ["authenticated_apis"],
+          "frequency": 10
+        }
+      ]
+    },
+    "assertionTemplate": {
+      "description": "断言模板模式",
+      "enabled": true,
+      "examples": [
+        {
+          "pattern": "status_200_with_data",
+          "template": "expect(response.status).toBe(200); expect(response.data).toBeDefined();",
+          "frequency": 15
+        }
+      ]
+    },
+    "crudPattern": {
+      "description": "CRUD 操作模式",
+      "enabled": true,
+      "patterns": {
+        "create": {
+          "methods": ["POST"],
+          "pathPatterns": ["/create", "/add", "/"],
+          "expectedStatus": [201, 200]
+        },
+        "read": {
+          "methods": ["GET"],
+          "pathPatterns": ["/list", "/get", "/{id}"],
+          "expectedStatus": [200]
+        },
+        "update": {
+          "methods": ["PUT", "PATCH"],
+          "pathPatterns": ["/update", "/modify", "/{id}"],
+          "expectedStatus": [200, 204]
+        },
+        "delete": {
+          "methods": ["DELETE"],
+          "pathPatterns": ["/delete", "/remove", "/{id}"],
+          "expectedStatus": [200, 204, 404]
+        }
+      }
+    }
+  },
+  
+  "recommendations": {
+    "enabled": true,
+    "types": {
+      "testData": {
+        "description": "测试数据推荐",
+        "enabled": true,
+        "basedOn": ["historical_usage", "api_patterns"]
+      },
+      "assertion": {
+        "description": "断言推荐",
+        "enabled": true,
+        "basedOn": ["api_method", "response_structure"]
+      },
+      "sequence": {
+        "description": "API 序列推荐",
+        "enabled": true,
+        "basedOn": ["business_flow_patterns"]
+      }
+    }
+  },
+  
+  "learning": {
+    "mode": "incremental",
+    "schedule": {
+      "trigger": "on_flow_completion",
+      "batchSize": 10
+    },
+    "retention": {
+      "maxPatterns": 1000,
+      "maxAge": 90
+    }
+  },
+  
+  "metrics": {
+    "trackingEnabled": true,
+    "metrics": [
+      "pattern_hit_rate",
+      "recommendation_acceptance",
+      "coverage_improvement"
+    ]
+  },
+  
+  "createdAt": "2026-03-11T00:00:00Z",
+  "updatedAt": "2026-03-11T00:00:00Z"
+}

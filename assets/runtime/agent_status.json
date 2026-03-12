@@ -1,0 +1,85 @@
+{
+  "version": "1.0.0",
+  "description": "ARTA Agent 状态进度文件 - 记录 Agent 任务执行状态和依赖关系",
+  
+  "currentTask": null,
+  
+  "agents": {
+    "arta-coordinator": {
+      "status": "idle",
+      "progress": 0,
+      "currentStep": null,
+      "startTime": null,
+      "endTime": null,
+      "dependencies": {},
+      "inputs": {},
+      "outputs": {},
+      "errors": []
+    },
+    "arta-analyzer": {
+      "status": "idle",
+      "progress": 0,
+      "currentStep": null,
+      "startTime": null,
+      "endTime": null,
+      "dependencies": {},
+      "inputs": {},
+      "outputs": {},
+      "errors": []
+    },
+    "arta-flow-recorder": {
+      "status": "idle",
+      "progress": 0,
+      "currentStep": null,
+      "startTime": null,
+      "endTime": null,
+      "dependencies": {},
+      "inputs": {},
+      "outputs": {},
+      "errors": []
+    },
+    "arta-test-generator": {
+      "status": "idle",
+      "progress": 0,
+      "currentStep": null,
+      "startTime": null,
+      "endTime": null,
+      "dependencies": {},
+      "inputs": {},
+      "outputs": {},
+      "errors": []
+    },
+    "arta-data-strategist": {
+      "status": "idle",
+      "progress": 0,
+      "currentStep": null,
+      "startTime": null,
+      "endTime": null,
+      "dependencies": {},
+      "inputs": {},
+      "outputs": {},
+      "errors": []
+    },
+    "arta-pattern-learner": {
+      "status": "idle",
+      "progress": 0,
+      "currentStep": null,
+      "startTime": null,
+      "endTime": null,
+      "dependencies": {},
+      "inputs": {},
+      "outputs": {},
+      "errors": []
+    }
+  },
+  
+  "dependencyGraph": {},
+  
+  "taskHistory": [],
+  
+  "metadata": {
+    "createdAt": null,
+    "updatedAt": null,
+    "lastTaskId": null
+  }
+}

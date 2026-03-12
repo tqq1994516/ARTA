@@ -1,0 +1,237 @@
+{
+  "version": "1.0.0",
+  "description": "ARTA Agent 依赖关系配置 - 定义各任务场景下 Agent 之间的依赖关系",
+  
+  "taskTemplates": {
+    "coord-generate": {
+      "description": "端到端测试生成任务",
+      "agents": ["arta-analyzer", "arta-pattern-learner", "arta-flow-recorder", "arta-data-strategist", "arta-test-generator"],
+      "dependencyGraph": {
+        "arta-analyzer": [],
+        "arta-pattern-learner": [],
+        "arta-flow-recorder": ["arta-analyzer", "arta-pattern-learner"],
+        "arta-data-strategist": ["arta-flow-recorder"],
+        "arta-test-generator": ["arta-data-strategist"]
+      },
+      "dataFlow": {
+        "arta-analyzer": {
+          "outputs": ["apiInventory"],
+          "description": "分析项目结构，生成 API 清单"
+        },
+        "arta-pattern-learner": {
+          "outputs": ["patterns"],
+          "description": "加载相关学习模式"
+        },
+        "arta-flow-recorder": {
+          "inputs": {
+            "apiInventory": "arta-analyzer",
+            "patterns": "arta-pattern-learner"
+          },
+          "outputs": ["flowRecords"],
+          "description": "确认业务链路"
+        },
+        "arta-data-strategist": {
+          "inputs": {
+            "flowRecords": "arta-flow-recorder"
+          },
+          "outputs": ["dataStrategy"],
+          "description": "配置测试数据策略"
+        },
+        "arta-test-generator": {
+          "inputs": {
+            "flowRecords": "arta-flow-recorder",
+            "dataStrategy": "arta-data-strategist"
+          },
+          "outputs": ["testCases"],
+          "description": "生成测试用例"
+        }
+      }
+    },
+    
+    "coord-analyze": {
+      "description": "模块分析任务",
+      "agents": ["arta-analyzer", "arta-pattern-learner"],
+      "dependencyGraph": {
+        "arta-analyzer": [],
+        "arta-pattern-learner": []
+      },
+      "dataFlow": {
+        "arta-analyzer": {
+          "outputs": ["apiInventory", "projectStructure"],
+          "description": "分析模块 API"
+        },
+        "arta-pattern-learner": {
+          "outputs": ["relatedPatterns"],
+          "description": "加载模块相关模式"
+        }
+      }
+    },
+    
+    "project-init": {
+      "description": "项目初始化任务",
+      "agents": ["arta-analyzer", "arta-pattern-learner"],
+      "dependencyGraph": {
+        "arta-analyzer": [],
+        "arta-pattern-learner": ["arta-analyzer"]
+      },
+      "dataFlow": {
+        "arta-analyzer": {
+          "outputs": ["apiInventory", "projectConfig"],
+          "description": "分析项目并生成配置"
+        },
+        "arta-pattern-learner": {
+          "inputs": {
+            "apiInventory": "arta-analyzer"
+          },
+          "outputs": ["initialPatterns"],
+          "description": "学习初始模式"
+        }
+      }
+    },
+    
+    "flow-complete": {
+      "description": "业务链路完成触发学习",
+      "agents": ["arta-pattern-learner", "arta-data-strategist"],
+      "dependencyGraph": {
+        "arta-pattern-learner": [],
+        "arta-data-strategist": ["arta-pattern-learner"]
+      },
+      "dataFlow": {
+        "arta-pattern-learner": {
+          "inputs": {
+            "flowRecord": "external"
+          },
+          "outputs": ["learnedPatterns"],
+          "description": "从链路学习模式"
+        },
+        "arta-data-strategist": {
+          "inputs": {
+            "learnedPatterns": "arta-pattern-learner"
+          },
+          "outputs": ["recommendedStrategy"],
+          "description": "推荐数据策略"
+        }
+      }
+    },
+    
+    "testpoint-import": {
+      "description": "测试点导入任务",
+      "agents": ["arta-flow-recorder", "arta-test-generator"],
+      "dependencyGraph": {
+        "arta-flow-recorder": [],
+        "arta-test-generator": ["arta-flow-recorder"]
+      },
+      "dataFlow": {
+        "arta-flow-recorder": {
+          "inputs": {
+            "testpoints": "external"
+          },
+          "outputs": ["identifiedFlows"],
+          "description": "识别测试点对应链路"
+        },
+        "arta-test-generator": {
+          "inputs": {
+            "identifiedFlows": "arta-flow-recorder"
+          },
+          "outputs": ["testCases"],
+          "description": "生成测试用例"
+        }
+      }
+    }
+  },
+  
+  "agentDefinitions": {
+    "arta-coordinator": {
+      "name": "ARTA 协调器",
+      "role": "中央协调、任务分解、状态监控",
+      "canExecuteIndependently": true,
+      "providesTo": ["arta-analyzer", "arta-flow-recorder", "arta-test-generator", "arta-data-strategist", "arta-pattern-learner"]
+    },
+    "arta-analyzer": {
+      "name": "项目分析 Agent",
+      "role": "项目分析、API 识别",
+      "canExecuteIndependently": true,
+      "providesTo": ["arta-flow-recorder", "arta-pattern-learner"]
+    },
+    "arta-flow-recorder": {
+      "name": "业务链路记录 Agent",
+      "role": "业务链路记录、API 序列配置",
+      "canExecuteIndependently": true,
+      "dependsOn": ["arta-analyzer"],
+      "providesTo": ["arta-data-strategist", "arta-test-generator", "arta-pattern-learner"]
+    },
+    "arta-test-generator": {
+      "name": "测试生成 Agent",
+      "role": "测试用例生成、报告输出",
+      "canExecuteIndependently": true,
+      "dependsOn": ["arta-flow-recorder", "arta-data-strategist"],
+      "providesTo": []
+    },
+    "arta-data-strategist": {
+      "name": "数据策略 Agent",
+      "role": "测试数据策略、数据推荐",
+      "canExecuteIndependently": true,
+      "dependsOn": ["arta-flow-recorder"],
+      "providesTo": ["arta-test-generator"]
+    },
+    "arta-pattern-learner": {
+      "name": "模式学习 Agent",
+      "role": "模式学习、智能推荐",
+      "canExecuteIndependently": true,
+      "dependsOn": [],
+      "providesTo": ["arta-flow-recorder", "arta-data-strategist", "arta-test-generator"]
+    }
+  },
+  
+  "statusTransitions": {
+    "idle": ["running"],
+    "running": ["completed", "failed", "cancelled"],
+    "completed": ["idle"],
+    "failed": ["idle", "running"],
+    "cancelled": ["idle"],
+    "blocked": ["running", "idle"]
+  },
+  
+  "progressReporting": {
+    "updateInterval": 5,
+    "minProgressStep": 5,
+    "steps": {
+      "arta-analyzer": [
+        {"step": 10, "description": "扫描项目目录"},
+        {"step": 30, "description": "识别框架类型"},
+        {"step": 50, "description": "定位路由文件"},
+        {"step": 70, "description": "提取 API 路由"},
+        {"step": 90, "description": "生成 API 清单"},
+        {"step": 100, "description": "分析完成"}
+      ],
+      "arta-flow-recorder": [
+        {"step": 20, "description": "加载依赖数据"},
+        {"step": 40, "description": "匹配业务链路"},
+        {"step": 60, "description": "确认 API 序列"},
+        {"step": 80, "description": "配置断言"},
+        {"step": 100, "description": "链路记录完成"}
+      ],
+      "arta-test-generator": [
+        {"step": 15, "description": "加载输入数据"},
+        {"step": 35, "description": "分析测试场景"},
+        {"step": 55, "description": "生成正向用例"},
+        {"step": 75, "description": "生成异常用例"},
+        {"step": 90, "description": "质量检查"},
+        {"step": 100, "description": "生成完成"}
+      ],
+      "arta-data-strategist": [
+        {"step": 25, "description": "分析数据需求"},
+        {"step": 50, "description": "推荐数据策略"},
+        {"step": 75, "description": "配置数据源"},
+        {"step": 100, "description": "策略配置完成"}
+      ],
+      "arta-pattern-learner": [
+        {"step": 20, "description": "加载历史模式"},
+        {"step": 40, "description": "提取候选模式"},
+        {"step": 60, "description": "模式匹配"},
+        {"step": 80, "description": "更新模式库"},
+        {"step": 100, "description": "学习完成"}
+      ]
+    }
+  }
+}

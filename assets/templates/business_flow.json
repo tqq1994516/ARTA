@@ -1,0 +1,146 @@
+{
+  "version": "1.0",
+  "lastUpdated": "",
+  "flows": [
+    {
+      "id": 1,
+      "name": "用户登录流程",
+      "description": "用户通过账号密码登录系统",
+      "module": "认证",
+      "priority": "P0",
+      "apis": [
+        {
+          "apiId": 1,
+          "order": 1,
+          "note": "用户登录获取token"
+        }
+      ],
+      "preconditions": [
+        "用户账号已注册",
+        "用户状态正常"
+      ],
+      "testData": {
+        "username": {
+          "source": "fixed",
+          "value": "test_user_001"
+        },
+        "password": {
+          "source": "fixed",
+          "value": "Test@123456"
+        }
+      },
+      "assertions": [
+        {
+          "step": 1,
+          "path": "$.status",
+          "operator": "==",
+          "expected": 200
+        },
+        {
+          "step": 1,
+          "path": "$.data.token",
+          "operator": "exists",
+          "expected": true
+        }
+      ],
+      "cleanup": [],
+      "status": "completed",
+      "createdAt": "",
+      "updatedAt": ""
+    },
+    {
+      "id": 2,
+      "name": "用户下单流程",
+      "description": "用户从浏览商品到完成订单创建的完整流程",
+      "module": "订单",
+      "priority": "P0",
+      "apis": [
+        {
+          "apiId": 1,
+          "order": 1,
+          "note": "用户登录获取token"
+        },
+        {
+          "apiId": 5,
+          "order": 2,
+          "note": "浏览商品列表"
+        },
+        {
+          "apiId": 8,
+          "order": 3,
+          "note": "添加商品到购物车"
+        },
+        {
+          "apiId": 10,
+          "order": 4,
+          "note": "创建订单"
+        }
+      ],
+      "preconditions": [
+        "用户账号已注册",
+        "商品有库存",
+        "测试环境正常"
+      ],
+      "testData": {
+        "username": {
+          "source": "pool",
+          "poolName": "user_accounts",
+          "strategy": "random",
+          "field": "username"
+        },
+        "password": {
+          "source": "pool",
+          "poolName": "user_accounts",
+          "strategy": "same_as_username",
+          "field": "password"
+        },
+        "product_id": {
+          "source": "chain",
+          "path": "response.step2.data.items[0].id"
+        },
+        "quantity": {
+          "source": "generated",
+          "function": "random_int",
+          "params": {
+            "min": 1,
+            "max": 5
+          }
+        }
+      },
+      "assertions": [
+        {
+          "step": 1,
+          "path": "$.status",
+          "operator": "==",
+          "expected": 200
+        },
+        {
+          "step": 4,
+          "path": "$.status",
+          "operator": "==",
+          "expected": 201
+        },
+        {
+          "step": 4,
+          "path": "$.data.order_id",
+          "operator": "regex",
+          "expected": "^ORD-\\d+$"
+        }
+      ],
+      "cleanup": [
+        {
+          "step": 4,
+          "action": "delete",
+          "endpoint": "DELETE /api/orders/{order_id}",
+          "params": {
+            "order_id": "{{response.step4.data.order_id}}"
+          },
+          "condition": "response.step4.status == 201"
+        }
+      ],
+      "status": "completed",
+      "createdAt": "",
+      "updatedAt": ""
+    }
+  ]
+}

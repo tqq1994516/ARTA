@@ -1,0 +1,26 @@
+{
+  "version": "1.0.0",
+  "description": "ARTA 学习模式存储 - 存储从历史数据中学习的模式",
+  
+  "apiSequences": [],
+  
+  "dataStrategies": [],
+  
+  "assertionTemplates": [],
+  
+  "crudPatterns": [],
+  
+  "modulePatterns": [],
+  
+  "statistics": {
+    "totalPatterns": 0,
+    "lastLearningTime": null,
+    "learningSessions": 0,
+    "patternHits": 0
+  },
+  
+  "metadata": {
+    "createdAt": "2026-03-11T00:00:00Z",
+    "updatedAt": "2026-03-11T00:00:00Z"
+  }
+}

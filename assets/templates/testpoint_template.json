@@ -1,0 +1,62 @@
+{
+  "version": "1.0",
+  "lastUpdated": "",
+  "source": "mermaid-mindmap",
+  "totalPoints": 0,
+  "processedPoints": 0,
+  "status": "pending",
+  "testpoints": [
+    {
+      "id": 1,
+      "path": "用户管理 > 用户注册 > 正常注册 > 手机号注册",
+      "name": "手机号注册",
+      "level": 3,
+      "parent": "正常注册",
+      "status": "pending",
+      "result": null,
+      "matchedApi": null,
+      "matchedFlow": null,
+      "linkedTestCase": null,
+      "skipReason": null
+    },
+    {
+      "id": 2,
+      "path": "用户管理 > 用户注册 > 正常注册 > 邮箱注册",
+      "name": "邮箱注册",
+      "level": 3,
+      "parent": "正常注册",
+      "status": "pending",
+      "result": null,
+      "matchedApi": null,
+      "matchedFlow": null,
+      "linkedTestCase": null,
+      "skipReason": null
+    },
+    {
+      "id": 3,
+      "path": "用户管理 > 用户注册 > 异常注册 > 重复注册",
+      "name": "重复注册",
+      "level": 3,
+      "parent": "异常注册",
+      "status": "pending",
+      "result": null,
+      "matchedApi": null,
+      "matchedFlow": null,
+      "linkedTestCase": null,
+      "skipReason": null
+    }
+  ],
+  "pendingTestpoints": [],
+  "processingProgress": {
+    "currentIndex": 0,
+    "completedCount": 0,
+    "skippedCount": 0,
+    "errorCount": 0
+  },
+  "summary": {
+    "generated": 0,
+    "newFlow": 0,
+    "skipped": 0,
+    "noApi": 0
+  }
+}

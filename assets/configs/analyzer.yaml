@@ -1,0 +1,105 @@
+# ARTA 项目分析配置
+# 用于分析项目代码结构和识别 API 路由
+
+version: "1.0"
+
+# 支持的框架列表
+frameworks:
+  - name: Express
+    language: JavaScript/TypeScript
+    filePatterns:
+      - "routes/**/*.js"
+      - "routes/**/*.ts"
+      - "app.js"
+      - "app.ts"
+    routePattern: "app\\.(get|post|put|delete|patch)\\s*\\(['\"]([^'\"]+)['\"]"
+    
+  - name: NestJS
+    language: TypeScript
+    filePatterns:
+      - "src/**/*.controller.ts"
+    routePattern: "@(Get|Post|Put|Delete|Patch)\\s*\\(['\"]([^'\"]+)['\"]"
+    
+  - name: Flask
+    language: Python
+    filePatterns:
+      - "**/*.py"
+    routePattern: "@app\\.route\\s*\\(['\"]([^'\"]+)['\"]"
+    
+  - name: FastAPI
+    language: Python
+    filePatterns:
+      - "**/*.py"
+    routePattern: "@app\\.(get|post|put|delete|patch)\\s*\\(['\"]([^'\"]+)['\"]"
+    
+  - name: Django
+    language: Python
+    filePatterns:
+      - "urls.py"
+      - "views.py"
+    routePattern: "path\\(['\"]([^'\"]+)['\"]"
+    
+  - name: Spring Boot
+    language: Java
+    filePatterns:
+      - "src/main/java/**/*Controller.java"
+    routePattern: "@(GetMapping|PostMapping|PutMapping|DeleteMapping|PatchMapping|RequestMapping)\\s*\\(['\"]([^'\"]+)['\"]"
+    
+  - name: Gin
+    language: Go
+    filePatterns:
+      - "**/*.go"
+    routePattern: "r\\.(GET|POST|PUT|DELETE|PATCH)\\s*\\(['\"]([^'\"]+)['\"]"
+    
+  - name: Echo
+    language: Go
+    filePatterns:
+      - "**/*.go"
+    routePattern: "e\\.(GET|POST|PUT|DELETE|PATCH)\\s*\\(['\"]([^'\"]+)['\"]"
+
+# 排除目录
+excludeDirs:
+  - node_modules
+  - venv
+  - __pycache__
+  - .git
+  - dist
+  - build
+  - target
+  - vendor
+  - .idea
+  - .vscode
+
+# 排除文件
+excludeFiles:
+  - "*.test.js"
+  - "*.spec.js"
+  - "*.test.ts"
+  - "*.spec.ts"
+  - "*_test.go"
+  - "*Test.java"
+
+# API 路径前缀识别
+apiPrefixes:
+  - api
+  - v1
+  - v2
+  - v3
+  - rest
+  - graphql
+
+# HTTP 方法描述映射
+methodDescriptions:
+  GET: 获取
+  POST: 创建
+  PUT: 更新
+  PATCH: 部分更新
+  DELETE: 删除
+
+# 分析深度
+analysisDepth: standard  # quick, standard, deep
+
+# 输出配置
+output:
+  format: json
+  path: assets/templates/api_inventory.json

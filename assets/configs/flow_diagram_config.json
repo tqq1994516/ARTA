@@ -1,0 +1,9 @@
+{
+  "serviceMap": {
+    "member": "会员服务",
+    "coupon": "优惠券服务",
+    "logistics": "物流服务",
+    "sms": "短信服务",
+    "oss": "对象存储服务"
+  }
+}

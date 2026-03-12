@@ -1,0 +1,28 @@
+{
+  "framework_patterns": {
+    "自定义框架名": {
+      "files": ["特征文件"],
+      "dependencies": ["依赖包"],
+      "route_patterns": ["路由正则"]
+    }
+  },
+  "exclude_dirs": ["node_modules", "venv", "__pycache__", ".git", "dist", "build"],
+  "api_prefixes": ["api", "v1", "v2", "v3", "rest"],
+  "method_descriptions": {
+    "GET": "获取",
+    "POST": "创建",
+    "PUT": "更新",
+    "PATCH": "部分更新",
+    "DELETE": "删除"
+  },
+  "framework_extensions": {
+    "express": [".js", ".ts"],
+    "nestjs": [".ts"],
+    "flask": [".py"],
+    "django": [".py"],
+    "fastapi": [".py"],
+    "spring": [".java"],
+    "gin": [".go"],
+    "echo": [".go"]
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "keyword_map": {
+    "审批": ["approve", "audit", "review"],
+    "退款": ["refund", "return"],
+    "发货": ["ship", "deliver", "dispatch"],
+    "签收": ["receive", "sign", "confirm"],
+    "支付": ["pay", "payment", "checkout"],
+    "评价": ["review", "comment", "rate"]
+  },
+  "method_map": {
+    "审批": "POST",
+    "退款": "POST",
+    "发货": "PUT",
+    "签收": "PUT",
+    "支付": "POST",
+    "评价": "POST"
+  },
+  "indent_size": 2
+}
