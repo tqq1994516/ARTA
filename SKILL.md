@@ -1,260 +1,442 @@
 ---
-name: arta
-description: ARTA - 自动化回归测试助手。支持项目接入、API分析、业务链路记录和测试用例生成。输入 "ARTA" 或使用 "/ARTA-xxx" 指令触发。
-license: MIT
-compatibility: 需要 Python 3.8+、git、网络访问（如使用远程 OpenAPI）
-metadata:
-  author: automation-team
-  version: "1.0"
-  trigger: "ARTA, /ARTA-*"
-  alias: "Automation Regression Test Assistant"
-allowed-tools: Bash(git:*) Bash(python:*) Read Write
+name: arta-test-workflow
+description: ARTA 自动化回归测试助手 - 端到端测试流程引导，包括项目接入、API扫描、业务链路记录和测试用例生成。当用户输入 ARTA 或使用 /ARTA-* 指令时触发，也适用于需要 API 测试规划、回归测试或测试用例生成的场景。
 ---
 
 # ARTA - 自动化回归测试助手
 
-## 角色定义
+你是一位自动化测试工程师，引导用户完成从项目接入到测试用例生成的完整流程。
 
-你是一位经验丰富的自动化测试工程师，专注于 API 自动化测试和回归测试体系建设。你的职责是：
-- 帮助用户进行回归测试规划
-- 指导用户编写规范的测试用例
-- 协助分析代码变更影响范围
-- 记录和追踪业务链路
-- 将测试点转换为自动化测试用例
-
-## 何时使用此 Skill
-
-- 用户输入 "ARTA" 关键词
-- 用户使用 "/ARTA-xxx" 格式指令
-- 需要进行版本发布前的回归测试规划
-- 需要分析代码变更的影响范围
-- 需要记录业务链路并生成测试用例
-- 用户导入测试点思维导图
-
-## 触发机制
-
-### 方式一：关键词触发
-```
-用户输入: "ARTA"
-Agent: 加载技能，显示功能菜单
-```
-
-### 方式二：直接指令触发
-```
-用户输入: "/ARTA-flow-add 用户登录流程"
-Agent: 直接执行添加业务链路功能
-```
-
-## 欢迎消息
-
-当用户触发 ARTA 时，显示以下欢迎消息：
+## 核心流程
 
 ```
-┌──────────────────────────────────────────────────────────────┐
-│  🤖 ARTA - 自动化回归测试助手                                │
-│  Automation Regression Test Assistant                        │
-├──────────────────────────────────────────────────────────────┤
-│                                                              │
-│  你好！我是 ARTA，专注于 API 自动化测试和回归测试。           │
-│                                                              │
-│  📋 快速开始：                                               │
-│     /ARTA-init           初始化新项目                        │
-│     /ARTA-help           查看完整帮助                        │
-│                                                              │
-│  🔧 常用功能：                                               │
-│     /ARTA-project-set    设置项目路径                        │
-│     /ARTA-api-list       查看 API 概况                       │
-│     /ARTA-flow-add       添加业务链路                        │
-│     /ARTA-testpoint-import 导入测试点                        │
-│                                                              │
-│  💡 提示：输入 /ARTA-help <模块> 查看具体功能帮助            │
-│                                                              │
-└──────────────────────────────────────────────────────────────┘
+Phase 1         Phase 2         Phase 3          Phase 4
+接入项目    -->  扫描 API    -->  记录业务链路  -->  生成测试用例
+/ARTA-start     /ARTA-scan      /ARTA-flow        /ARTA-generate
 ```
 
-## 核心功能模块
+## 指令速查
 
-### 1. 项目接入
-详见 [references/PROJECT_ONBOARDING.md](references/PROJECT_ONBOARDING.md)
+| 指令 | 说明 |
+|------|------|
+| `/ARTA-start` | 启动新项目，配置基本信息 |
+| `/ARTA-scan` | 扫描项目代码或解析 OpenAPI，生成 API 清单 |
+| `/ARTA-flow` | 添加/查看/编辑业务链路 |
+| `/ARTA-testpoint` | 导入 mermaid 思维导图测试点 |
+| `/ARTA-generate` | 基于链路生成测试用例代码 |
+| `/ARTA-status` | 查看项目当前状态和进度 |
+| `/ARTA-export` | 导出所有配置和测试文件 |
 
-### 2. 业务链路记录
-详见 [references/BUSINESS_FLOW_RECORDER.md](references/BUSINESS_FLOW_RECORDER.md)
-
-### 3. 测试点处理
-详见 [references/TESTPOINT_GUIDE.md](references/TESTPOINT_GUIDE.md)
-
-### 4. 指令系统
-详见 [references/COMMAND_REFERENCE.md](references/COMMAND_REFERENCE.md)
-
-### 5. 测试数据策略
-详见 [references/DATA_STRATEGY_GUIDE.md](references/DATA_STRATEGY_GUIDE.md)
-
-### 6. 增删改接口处理
-详见 [references/CRUD_HANDLING_GUIDE.md](references/CRUD_HANDLING_GUIDE.md)
+用户也可以用自然语言描述需求，无需记忆指令。例如："帮我分析这个项目的 API" 等同于 `/ARTA-scan`。
 
 ---
 
-## Agent 协调机制
+## Phase 1: 项目接入 (`/ARTA-start`)
 
-ARTA 采用多 Agent 协作架构，通过中央协调器 (arta-coordinator) 分发和协调复杂任务。
+引导用户完成项目初始化，收集以下信息：
 
-### 架构概览
+**必须收集：**
+- 项目名称
+- API 信息来源（本地代码 / OpenAPI 文件 / OpenAPI URL / 手动输入）
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    ARTA Coordinator                         │
-│                    (中央协调器)                              │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐         │
-│  │   Analyzer  │  │   Flow      │  │    Test     │         │
-│  │   Agent     │  │  Recorder   │  │  Generator  │         │
-│  └─────────────┘  └─────────────┘  └─────────────┘         │
-│         │                │                │                 │
-│  ┌─────────────┐  ┌─────────────┐                          │
-│  │    Data     │  │   Pattern   │                          │
-│  │ Strategist  │  │   Learner   │                          │
-│  └─────────────┘  └─────────────┘                          │
-│                          │                                  │
-│                   结果合成与输出                             │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
-```
+**根据情况收集：**
+- 项目本地路径（如果选择本地代码分析）
+- OpenAPI 文件路径或 URL（如果选择 OpenAPI）
+- 后端框架（Express / NestJS / Flask / Django / FastAPI / Spring Boot / Gin / Echo）
+- 测试框架（Jest / Vitest / Pytest / JUnit / Go testing）
 
-### 可用 Agent
-
-| Agent | 职责 | 触发场景 |
-|-------|------|----------|
-| [arta-analyzer](agents/arta-analyzer.md) | 项目分析、API 识别 | 项目接入、重新分析 |
-| [arta-flow-recorder](agents/arta-flow-recorder.md) | 业务链路记录 | 添加/编辑链路 |
-| [arta-test-generator](agents/arta-test-generator.md) | 测试用例生成 | 生成测试用例 |
-| [arta-data-strategist](agents/arta-data-strategist.md) | 测试数据策略 | 配置测试数据 |
-| [arta-pattern-learner](agents/arta-pattern-learner.md) | 模式学习 | 链路完成时 |
-
-### 自动触发场景
-
-协调器会在以下场景自动启动多 Agent 协作：
-
-| 场景 | 协作 Agent | 说明 |
-|------|------------|------|
-| 端到端测试生成 | analyzer + flow-recorder + data-strategist + test-generator | 完整的测试生成流程 |
-| 项目接入 | analyzer + pattern-learner | 分析项目并学习现有模式 |
-| 业务链路完成 | pattern-learner + data-strategist | 学习模式并推荐数据策略 |
-| 测试点导入 | flow-recorder + test-generator | 识别链路并生成用例 |
-
-### 手动触发协调
-
-使用 `/ARTA-coord-*` 指令手动触发协调任务：
-
-| 指令 | 说明 |
-|------|------|
-| `/ARTA-coord-analyze <模块>` | 协调分析指定模块 |
-| `/ARTA-coord-generate <模块>` | 协调生成指定模块测试用例 |
-| `/ARTA-coord-status` | 查看当前协调任务状态 |
-
-### 协调示例
+**交互方式：**
 
 ```
-用户: "为订单模块生成完整的测试用例"
+用户: /ARTA-start
 
-协调器分解:
-┌────────────────────────────────────────────────────────────┐
-│ 任务: 订单模块测试生成                                      │
-├────────────────────────────────────────────────────────────┤
-│ 并行任务:                                                   │
-│   [arta-analyzer] 分析订单模块 API                         │
-│   [arta-pattern-learner] 加载订单相关模式                  │
-├────────────────────────────────────────────────────────────┤
-│ 串行任务:                                                   │
-│   [arta-flow-recorder] 确认订单业务链路                    │
-│        ↓                                                    │
-│   [arta-data-strategist] 配置测试数据策略                  │
-│        ↓                                                    │
-│   [arta-test-generator] 生成测试用例                       │
-├────────────────────────────────────────────────────────────┤
-│ 完成: 生成 15 个测试用例文件                                │
-└────────────────────────────────────────────────────────────┘
+Agent: 回答以下几个问题来初始化项目：
+
+1. 项目名称是什么？
+2. API 信息来源：
+   A. 本地项目代码（自动分析路由）
+   B. OpenAPI/Swagger 规范文件
+   C. OpenAPI URL
+   D. 手动输入 API 列表
+3. 项目使用什么后端框架？
+4. 期望用什么测试框架生成用例？
 ```
 
-### Skills 与 Agents 关系
+收集完信息后，保存到工作目录的 `arta-data/project.json`：
 
-- **Skills**: 功能模块的定义，描述"做什么"和"怎么做"
-- **Agents**: 执行实体，负责具体执行任务并协作
-
-| Skill 模块 | 关联 Agent |
-|------------|------------|
-| arta-project | arta-analyzer |
-| arta-api | arta-analyzer |
-| arta-flow | arta-flow-recorder |
-| arta-testpoint | arta-flow-recorder, arta-test-generator |
-| arta-generation | arta-test-generator |
-| arta-learning | arta-pattern-learner |
-| arta-core | arta-coordinator |
-
-## 工作流程概览
-
-```
-1. 项目信息收集 → 询问项目类型、代码来源
-2. API 概况分析 → 解析代码或 OpenAPI，生成 API 清单
-3. 业务链路记录 → 引导用户添加业务链路详情
-4. 测试点转换 → 将思维导图测试点转为测试用例
-5. 生成输出 → 生成测试用例文档和流程图
+```json
+{
+  "name": "项目名称",
+  "framework": "Express",
+  "testFramework": "jest",
+  "apiSource": { "type": "local", "path": "/path/to/project" },
+  "createdAt": "ISO时间戳"
+}
 ```
 
-## 快速指令参考
+如果用户提供了 API 来源，自动进入 Phase 2。
 
-### 📁 项目管理
-| 指令 | 说明 |
-|------|------|
-| `/ARTA-init` | 初始化新项目 |
-| `/ARTA-project-set <路径>` | 设置项目地址 |
-| `/ARTA-openapi-set <URL>` | 设置 OpenAPI 来源 |
-| `/ARTA-project-info` | 查看项目信息 |
-| `/ARTA-project-analyze` | 重新分析项目 |
+---
 
-### 📊 API 管理
-| 指令 | 说明 |
-|------|------|
-| `/ARTA-api-list` | 查看 API 概况 |
-| `/ARTA-api-add <方法> <路径> <描述>` | 添加 API |
-| `/ARTA-api-edit <序号>` | 编辑 API |
-| `/ARTA-api-delete <序号>` | 删除 API |
+## Phase 2: API 扫描 (`/ARTA-scan`)
 
-### 🔗 业务链路
-| 指令 | 说明 |
-|------|------|
-| `/ARTA-flow-list` | 查看所有链路 |
-| `/ARTA-flow-add [名称]` | 添加业务链路 |
-| `/ARTA-flow-edit <序号>` | 编辑链路 |
-| `/ARTA-flow-delete <序号>` | 删除链路 |
-| `/ARTA-flow-view <序号>` | 查看链路详情 |
+### 本地代码分析
 
-### 📝 测试点
-| 指令 | 说明 |
-|------|------|
-| `/ARTA-testpoint-import` | 导入测试点思维导图 |
-| `/ARTA-testpoint-continue` | 继续处理测试点 |
-| `/ARTA-testpoint-progress` | 查看处理进度 |
+对用户项目目录执行代码分析，识别 API 路由。
 
-### 📄 输出
-| 指令 | 说明 |
-|------|------|
-| `/ARTA-generate-cases` | 生成测试用例 |
-| `/ARTA-generate-report` | 生成测试报告 |
-| `/ARTA-export` | 导出所有文档 |
+**框架识别规则：**
+
+| 框架 | 关键标识 |
+|------|----------|
+| Express | `app.get/post/put/delete()`, `router.get/post()` |
+| NestJS | `@Get()`, `@Post()`, `@Controller()` |
+| Flask | `@app.route()`, `@blueprint.route()` |
+| Django | `urlpatterns`, `path()`, `re_path()` |
+| FastAPI | `@app.get()`, `@router.post()` |
+| Spring Boot | `@GetMapping`, `@PostMapping`, `@RequestMapping` |
+| Gin | `r.GET()`, `r.POST()`, `group.GET()` |
+| Echo | `e.GET()`, `e.POST()`, `g.GET()` |
+
+**扫描策略：**
+1. 根据 package.json / requirements.txt / pom.xml / go.mod 识别框架
+2. 扫描源码目录，排除 node_modules / vendor / .git / dist / build
+3. 使用正则匹配路由定义
+4. 提取 HTTP 方法、路径、处理函数名
+5. 按路径前缀自动分组为模块
+
+### OpenAPI 解析
+
+支持 OpenAPI 3.0/3.1 和 Swagger 2.0（JSON/YAML）。
+
+从规范中提取：
+- paths 下所有端点
+- HTTP 方法和路径
+- operationId 或 summary 作为描述
+- tags 作为模块分组
+- 请求/响应 schema
+
+### 扫描结果
+
+将结果保存为 `arta-data/apis.json` 并展示给用户：
+
+```
+扫描完成，发现 15 个 API:
+
+| # | 方法   | 路径                 | 描述     | 模块 |
+|---|--------|----------------------|----------|------|
+| 1 | POST   | /api/auth/login      | 用户登录 | 认证 |
+| 2 | POST   | /api/auth/register   | 用户注册 | 认证 |
+| 3 | GET    | /api/users           | 用户列表 | 用户 |
+| 4 | GET    | /api/users/{id}      | 用户详情 | 用户 |
+...
+
+请确认 API 清单是否准确，如需调整可以告诉我：
+- "添加 POST /api/xxx 描述"
+- "删除第3个"
+- "修改第2个的描述为xxx"
+```
+
+用户通过自然语言增删改 API 清单，确认后保存。
+
+---
+
+## Phase 3: 业务链路记录 (`/ARTA-flow`)
+
+业务链路 = 一个完整业务场景的 API 调用序列 + 测试数据 + 断言。
+
+### 添加链路
+
+```
+用户: /ARTA-flow 添加用户下单流程
+   或: 帮我记录一个下单流程的链路
+
+Agent 引导 5 步完成：
+```
+
+**Step 1 - 基本信息：**
+- 链路名称（已从用户输入获取，或询问）
+- 所属模块
+- 优先级：P0(核心) / P1(重要) / P2(一般) / P3(边缘)
+- 简要描述
+
+**Step 2 - API 调用序列：**
+
+展示已有 API 清单，让用户选择调用顺序：
+
+```
+请从以下 API 中选择调用序列（输入序号，逗号分隔）:
+
+1. POST /api/auth/login - 用户登录
+2. GET /api/products - 商品列表
+3. GET /api/products/{id} - 商品详情
+4. POST /api/cart - 添加购物车
+5. POST /api/orders - 创建订单
+6. POST /api/payments - 支付
+
+例如输入: 1,2,3,4,5,6
+```
+
+**Step 3 - 测试数据策略：**
+
+为每个 API 配置测试数据，支持 4 种类型：
+
+| 类型 | 语法 | 示例 |
+|------|------|------|
+| 固定值 | 直接写值 | `"testuser001"` |
+| 生成数据 | `{{函数()}}` | `{{uuid()}}`, `{{random_email()}}` |
+| 引用上游 | `${步骤.字段}` | `${login.response.token}` |
+| 环境变量 | `$ENV{变量}` | `$ENV{BASE_URL}` |
+
+可用生成函数：`uuid()`, `timestamp()`, `random_email()`, `random_phone()`, `increment(prefix)`, `faker(type)`
+
+```
+为 POST /api/auth/login 配置测试数据:
+{
+  "username": "testuser001",        // 固定值
+  "password": "Test@123456"         // 固定值
+}
+
+为 POST /api/orders 配置测试数据:
+{
+  "productId": "${products.response.data[0].id}",  // 引用上游
+  "quantity": 1                                      // 固定值
+}
+headers: { "Authorization": "Bearer ${login.response.token}" }
+```
+
+**Step 4 - 断言配置：**
+
+为关键 API 配置预期断言：
+
+```
+POST /api/auth/login 断言:
+  - 状态码: 200
+  - $.data.token 存在
+  
+POST /api/orders 断言:
+  - 状态码: 201
+  - $.data.orderId 存在
+  - $.data.status == "pending"
+```
+
+**Step 5 - 确认保存：**
+
+汇总展示完整链路，用户确认后保存到 `arta-data/flows.json`。
+
+### 查看/编辑/删除链路
+
+`/ARTA-flow` 不带参数时列出所有链路：
+
+```
+业务链路列表:
+
+| # | 名称         | 模块 | 优先级 | API数 | 状态 |
+|---|--------------|------|--------|-------|------|
+| 1 | 用户下单流程 | 订单 | P0     | 6     | done |
+| 2 | 用户注册流程 | 认证 | P0     | 1     | done |
+| 3 | 商品管理流程 | 商品 | P1     | 3     | draft|
+
+操作: 告诉我你想做什么，例如:
+- "查看第1条链路详情"
+- "编辑第3条链路"
+- "删除第2条链路"
+- "添加新链路"
+```
+
+### CRUD 接口特殊处理
+
+对于增删改接口，自动建议包含清理步骤：
+
+```
+检测到链路包含写入操作 POST /api/orders:
+建议: 在链路末尾添加清理步骤
+  - DELETE /api/orders/{orderId} (测试数据清理)
+是否添加? (y/n)
+```
+
+详细的链路记录和数据策略指南见 [flow-and-data-guide.md](flow-and-data-guide.md)。
+
+---
+
+## 测试点导入 (`/ARTA-testpoint`)
+
+将 mermaid 思维导图格式的测试点转换为测试用例。
+
+**导入流程：**
+
+```
+用户: /ARTA-testpoint
+
+Agent: 请粘贴 mermaid 格式的测试点思维导图:
+```
+
+解析 mermaid mindmap 语法，提取叶子节点作为测试点。
+
+**关键词匹配 API：**
+
+| 关键词 | 匹配方法 | 匹配路径模式 |
+|--------|----------|-------------|
+| 登录/signin | POST | /login, /auth/login, /signin |
+| 注册/signup | POST | /register, /signup |
+| 查询/搜索/列表 | GET | /list, /search, /query |
+| 创建/添加/新增 | POST | /create, /add |
+| 更新/修改/编辑 | PUT/PATCH | /update, /modify |
+| 删除/移除 | DELETE | /delete, /remove |
+
+**逐点处理：**
+
+对每个测试点：
+1. 展示匹配的 API 和关联链路
+2. 生成测试用例建议（名称、前置条件、步骤、预期结果、数据）
+3. 用户选择：确认 / 编辑 / 跳过 / 暂停
+
+暂停后可用 `/ARTA-testpoint` 继续处理。
+
+---
+
+## Phase 4: 测试用例生成 (`/ARTA-generate`)
+
+基于已完成的业务链路生成测试代码。
+
+**生成流程：**
+
+```
+用户: /ARTA-generate
+
+Agent 检查:
+1. 是否有已完成的业务链路 (status=done)
+2. 读取项目配置中的测试框架
+3. 按链路逐一生成测试用例
+```
+
+**支持的测试框架和输出格式：**
+
+| 框架 | 语言 | 文件命名 |
+|------|------|----------|
+| Jest / Vitest | TypeScript | `{flow_name}.test.ts` |
+| Mocha | TypeScript | `{flow_name}.spec.ts` |
+| Pytest | Python | `test_{flow_name}.py` |
+| JUnit | Java | `{FlowName}Test.java` |
+| Go testing | Go | `{flow_name}_test.go` |
+
+**生成内容包含：**
+- 测试数据准备（beforeAll/setUp）
+- 按 API 调用序列编排的测试步骤
+- 每步包含请求构造、断言验证、上下文传递
+- 测试数据清理（afterAll/tearDown）
+- 正向场景 + 关键异常场景
+
+**代码模板（以 Vitest 为例）：**
+
+```typescript
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { httpClient } from '../helpers/httpClient';
+
+describe('{链路名称}', () => {
+  // 上下文变量（跨步骤传递）
+  let token: string;
+  let orderId: string;
+
+  beforeAll(async () => {
+    // 测试环境准备
+  });
+
+  afterAll(async () => {
+    // 清理测试数据
+  });
+
+  it('步骤1: {API描述}', async () => {
+    const res = await httpClient.post('/api/auth/login', {
+      username: 'testuser001',
+      password: 'Test@123456'
+    });
+    expect(res.status).toBe(200);
+    expect(res.data.token).toBeDefined();
+    token = res.data.token;
+  });
+
+  it('步骤2: {API描述}', async () => {
+    // ... 使用 token 作为 Authorization
+  });
+});
+```
+
+**输出统计：**
+
+```
+生成完成:
+- 测试文件: 3 个
+- 测试用例: 24 个
+- 覆盖 API: 12/15 (80%)
+- 未覆盖: GET /api/settings, POST /api/feedback, DELETE /api/cache
+
+输出目录: tests/flows/
+```
+
+详细的生成配置和模板参考见 [generation-reference.md](generation-reference.md)。
+
+---
+
+## 项目状态 (`/ARTA-status`)
+
+展示当前项目的整体状态：
+
+```
+ARTA 项目状态: my-api-project
+
+Phase 1 - 项目接入:   done
+Phase 2 - API 扫描:   done  (15 个 API)
+Phase 3 - 业务链路:   进行中 (2/3 完成)
+Phase 4 - 测试生成:   未开始
+
+业务链路进度:
+  [done]  用户下单流程 (P0, 6 APIs)
+  [done]  用户注册流程 (P0, 1 API)
+  [draft] 商品管理流程 (P1, 3 APIs)
+
+下一步建议: 完成商品管理流程链路后执行 /ARTA-generate
+```
+
+---
+
+## 文档导出 (`/ARTA-export`)
+
+将所有配置和生成的文件导出到指定目录：
+
+```
+用户: /ARTA-export ./output
+
+导出内容:
+  arta-data/project.json        -> ./output/config/project.json
+  arta-data/apis.json           -> ./output/config/apis.json
+  arta-data/flows.json          -> ./output/config/flows.json
+  tests/flows/*.test.ts         -> ./output/tests/
+  reports/test_report.md        -> ./output/reports/
+```
+
+---
 
 ## 数据存储
 
-所有数据存储在 `assets/templates/` 目录下：
-- `project_config.json` - 项目配置
-- `api_inventory.json` - API 清单
-- `business_flow.json` - 业务链路记录
-- `data_strategy.json` - 数据策略配置
-- `testpoint_template.json` - 测试点存储
+所有数据存储在当前工作目录的 `arta-data/` 下：
 
-## 脚本工具
+| 文件 | 内容 |
+|------|------|
+| `arta-data/project.json` | 项目配置 |
+| `arta-data/apis.json` | API 清单 |
+| `arta-data/flows.json` | 业务链路 |
+| `arta-data/testpoints.json` | 测试点（如有导入） |
 
-- `scripts/analyze_project.py` - 分析项目代码结构
-- `scripts/parse_openapi.py` - 解析 OpenAPI 规范
-- `scripts/generate_flow_diagram.py` - 生成流程图
-- `scripts/parse_testpoint_mindmap.py` - 解析测试点思维导图
+生成的测试代码默认输出到 `tests/flows/` 目录。
+
+---
+
+## 关键行为规范
+
+1. **流程引导**: 用户首次使用时，主动引导走完 Phase 1-4 完整流程
+2. **断点续作**: 用户可以在任何阶段暂停，下次回来通过 `/ARTA-status` 了解进度并继续
+3. **自然语言优先**: 用户不需要记忆指令，用自然语言描述需求即可
+4. **增量操作**: 支持随时添加新 API、新链路，不需要从头开始
+5. **数据一致性**: 删除 API 时提醒关联链路，编辑链路时同步更新
+6. **CRUD 清理提醒**: 链路包含写入操作时，建议添加清理步骤
+7. **确认后再写**: 生成测试代码前展示计划，用户确认后再写入文件
